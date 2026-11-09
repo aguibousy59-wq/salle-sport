@@ -1,0 +1,239 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>Gestion Salle de Sport</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F1F5F6;--sf:#fff;--s2:#E7EDF0;--ink:#0E2130;--mu:#566876;--ln:#D6DFE4;--ac:#C84C09;--ai:#fff;--nav:#0B2A3C;--ok:#0C7A59;--okb:#D7F1E6;--wn:#8C5200;--wnb:#FBE9C6;--bd:#B42318;--bdb:#FBDFDB;--wave:#1B7FD6;--om:#E0640C;--cash:#6B7F6B;--fd:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;--fb:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#09131B;--sf:#112230;--s2:#1B2F3F;--ink:#E9F1F5;--mu:#93A6B3;--ln:#223747;--ac:#FF8A47;--ai:#1A0B02;--nav:#071018;--ok:#5FD1A3;--okb:#103A2D;--wn:#F0B35A;--wnb:#3A2B10;--bd:#FF8B82;--bdb:#3D1916;--wave:#59adf0;--om:#f59a55;--cash:#9fb39b;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#09131B;--sf:#112230;--s2:#1B2F3F;--ink:#E9F1F5;--mu:#93A6B3;--ln:#223747;--ac:#FF8A47;--ai:#1A0B02;--nav:#071018;--ok:#5FD1A3;--okb:#103A2D;--wn:#F0B35A;--wnb:#3A2B10;--bd:#FF8B82;--bdb:#3D1916;--wave:#59adf0;--om:#f59a55;--cash:#9fb39b;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 var(--fb)}
+button,input,select{font:inherit;color:inherit}:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+h1,h2{font-family:var(--fd);margin:0;letter-spacing:-.01em;text-wrap:balance}h1{font-size:30px;font-weight:800}h2{font-size:19px;font-weight:700}
+.mu,.sub{color:var(--mu);font-size:13.5px}ul.l{list-style:none;margin:0;padding:0}
+.shell{display:grid;grid-template-columns:228px minmax(0,1fr);min-height:100dvh}
+.side{background:var(--nav);color:#E8F2F6;padding:20px 14px;display:flex;flex-direction:column;gap:24px;position:sticky;top:env(safe-area-inset-top,0px);height:100dvh;align-self:start}
+.logo{display:flex;gap:10px;align-items:center}.mark{width:40px;height:40px;border-radius:12px;background:var(--ac);color:var(--ai);display:grid;place-items:center;font:800 17px var(--fd);flex:none}
+.logo b{font:700 16px/1.15 var(--fd);overflow-wrap:anywhere}.logo small{display:block;font:400 12px var(--fb);opacity:.65}
+.nav{display:flex;flex-direction:column;gap:4px}.nav a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;color:inherit;text-decoration:none;font-weight:500;opacity:.78}
+.nav a:hover{opacity:1;background:rgba(255,255,255,.07)}.nav a[aria-current=page]{opacity:1;background:rgba(255,255,255,.13);font-weight:600}.nav svg{width:20px;height:20px;flex:none}
+.main{padding:26px clamp(16px,3vw,36px) 48px;display:flex;flex-direction:column;gap:18px;min-width:0;max-width:1120px;width:100%}
+.hd{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.demo{background:var(--wnb);color:var(--wn);border-radius:10px;padding:8px 12px;font-size:13px;font-weight:500}
+.hero{background:var(--nav);color:#EAF3F7;border:1px solid rgba(255,255,255,.08);border-radius:22px;padding:22px;display:flex;flex-direction:column;gap:14px}.hero h2{font-size:25px}
+.big{width:100%;border:2px solid transparent;border-radius:14px;padding:16px 18px;font-size:19px;background:#fff;color:#0E2130}.big:focus-visible{border-color:var(--ac);outline:none}
+.rs{display:flex;align-items:center;gap:12px;padding:10px 12px;background:rgba(255,255,255,.09);border-radius:14px;margin-top:8px;flex-wrap:wrap}
+.rs .w{flex:1 1 140px;min-width:0}.rs .w span{opacity:.75;font-size:13px;display:block}.hero .sub{color:#B9CBD6}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{text-align:left;background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:14px 16px;cursor:pointer;display:flex;flex-direction:column;gap:2px}
+.kpi:hover{border-color:var(--ac)}.kpi b{font:800 30px/1.1 var(--fd)}.kpi small{font-size:14px;color:var(--mu)}.kpi span{color:var(--mu);font-size:13.5px}.kpi.wn b{color:var(--wn)}.kpi.bd b{color:var(--bd)}
+.cols{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:16px;align-items:start}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.row{display:flex;align-items:center;gap:12px;padding:11px 0;border-top:1px solid var(--ln);flex-wrap:wrap}.row:first-child{border-top:0}
+.w{flex:1 1 150px;min-width:0}.w b{display:block;overflow-wrap:anywhere}.w span{color:var(--mu);font-size:13px}
+.av{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;font:700 14px var(--fd);flex:none;background:var(--s2);color:var(--ink);box-shadow:0 0 0 3px var(--ok)}
+.av.bientot{box-shadow:0 0 0 3px var(--wn)}.av.expire{box-shadow:0 0 0 3px var(--bd)}
+.btn{border:1px solid var(--ln);background:var(--sf);color:var(--ink);border-radius:10px;padding:10px 15px;font-weight:600;cursor:pointer;display:inline-flex;gap:6px;align-items:center;text-decoration:none;line-height:1.2}
+.btn:hover{background:var(--s2)}.btn.pri{background:var(--ac);border-color:var(--ac);color:var(--ai)}.btn.pri:hover{filter:brightness(1.08)}
+.btn.wa{background:#0F7D44;border-color:#0F7D44;color:#fff}.btn.sm{padding:7px 12px;font-size:13.5px}.btn.gh{border-color:transparent;background:none;color:var(--bd)}
+.pill{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12.5px;font-weight:600;white-space:nowrap}
+.pill.ok{background:var(--okb);color:var(--ok)}.pill.bientot{background:var(--wnb);color:var(--wn)}.pill.expire{background:var(--bdb);color:var(--bd)}
+.field{background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:11px 13px;width:100%}
+.chips{display:flex;flex-wrap:wrap;gap:8px}.chip{border:1px solid var(--ln);background:var(--sf);border-radius:99px;padding:6px 14px;font-weight:600;font-size:13.5px;cursor:pointer;color:var(--mu)}
+.chip[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}.hero .chip{background:rgba(255,255,255,.1);border-color:transparent;color:#EAF3F7;cursor:default}
+.mem{display:grid;grid-template-columns:auto minmax(0,1.2fr) minmax(0,1.1fr) auto;gap:10px 16px;align-items:center;padding:13px 0;border-top:1px solid var(--ln)}.mem:first-child{border-top:0}
+.sp{display:flex;justify-content:space-between;gap:8px;align-items:center;font-size:13.5px;margin-bottom:6px;flex-wrap:wrap}
+.pg{height:7px;border-radius:9px;background:var(--s2);overflow:hidden}.pg i{display:block;height:100%;background:var(--ok);border-radius:9px}.pg.bientot i{background:var(--wn)}.pg.expire i{background:var(--bd)}
+.pg.wave i{background:var(--wave)}.pg.om i{background:var(--om)}.pg.cash i{background:var(--cash)}
+.acts{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}.cf{display:inline-flex;gap:4px;align-items:center;font-size:13px}
+.wk{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;height:170px}
+.col{display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px}.col i{display:block;width:100%;max-width:38px;background:var(--s2);border:1px solid var(--ln);border-radius:8px 8px 3px 3px;min-height:4px}
+.col.td i{background:var(--ac);border-color:var(--ac)}.col span{font-weight:700}.col em{font-style:normal;font-size:12px;color:var(--mu)}.col.td em{color:var(--ink);font-weight:700}
+.md{display:grid;grid-template-columns:130px minmax(0,1fr) auto;gap:12px;align-items:center}.tag{display:inline-flex;align-items:center;gap:7px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--mu);display:inline-block}.dot.wave{background:var(--wave)}.dot.om{background:var(--om)}.dot.cash{background:var(--cash)}
+.pay{display:grid;grid-template-columns:70px minmax(0,1fr) 140px auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--ln)}.pay:first-child{border-top:0}.pay .a{font-weight:600;text-align:right}
+.empty{padding:20px;text-align:center;color:var(--mu);background:var(--s2);border-radius:12px}
+.set{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.set label,.sheet label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:13.5px}
+.scrim{position:fixed;inset:0;background:rgba(5,12,18,.6);z-index:20}
+.sheet{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,calc(100% - 28px));max-height:calc(100% - 28px);overflow-y:auto;background:var(--sf);border:1px solid var(--ln);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
+.lb{font-weight:600;font-size:13.5px;margin-bottom:-6px}.opts{display:flex;flex-wrap:wrap;gap:8px}.sheet label.opt{display:block;position:relative;font-size:14px}
+.opt input{position:absolute;opacity:0;inset:0}.opt span{display:block;border:1.5px solid var(--ln);border-radius:12px;padding:9px 14px;cursor:pointer}.opt small{display:block;font-weight:400;color:var(--mu);font-size:12px}
+.opt input:checked+span{border-color:var(--ac);background:color-mix(in srgb,var(--ac) 13%,transparent)}.opt input:focus-visible+span{outline:2px solid var(--ac)}
+.prev{background:var(--s2);border-radius:10px;padding:9px 12px;font-size:13.5px}.foot{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;z-index:30;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));max-width:calc(100% - 28px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;font-weight:600;box-shadow:0 8px 28px rgba(0,0,0,.3)}
+@media(min-width:761px){.toast{bottom:24px}}
+@media(max-width:900px){.cols{grid-template-columns:1fr}}
+@media(max-width:760px){.shell{display:block}.side{position:fixed;top:auto;left:0;right:0;bottom:0;height:auto;flex-direction:row;padding:6px 8px calc(6px + env(safe-area-inset-bottom,0px));z-index:10;gap:0;border-top:1px solid rgba(255,255,255,.1)}
+.logo{display:none}.nav{flex-direction:row;flex:1;justify-content:space-around}.nav a{flex-direction:column;gap:2px;font-size:11.5px;padding:6px 12px}.main{padding-bottom:100px}h1{font-size:26px}
+.mem{grid-template-columns:auto minmax(0,1fr)}.mem .plan,.mem .acts{grid-column:1/-1}.mem .acts{justify-content:flex-start}
+.md{grid-template-columns:1fr auto}.md .pg{grid-column:1/-1;order:3}.pay{grid-template-columns:minmax(0,1fr) auto;grid-template-areas:"n a" "d m"}.pay .n{grid-area:n}.pay .a{grid-area:a}.pay .d{grid-area:d}.pay .m{grid-area:m;justify-self:end}
+.sheet{top:auto;bottom:0;left:0;transform:none;width:100%;max-height:92%;border-radius:20px 20px 0 0;padding-bottom:calc(20px + env(safe-area-inset-bottom,0px))}}
+.out{margin-top:auto;color:#E8F2F6;opacity:.75;font-size:13.5px;padding:10px 12px;text-decoration:none}.out:hover{opacity:1}@media(max-width:760px){.out{display:none}}
+</style></head><body><div id="app"></div><div id="sheet"></div><div id="toast" role="status" aria-live="polite"></div>
+<script>
+/* Pont vers l'API Flask : même interface que le stockage de la version web */
+window.claude={use:async n=>{if(n!=='db')return null;const L={};
+const api=async(m,u,b)=>{const r=await fetch(u,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});if(r.status===401){location='/login';throw{code:'auth'}}if(!r.ok)throw{code:'invalid_argument'};return r.json()};
+const sync=async c=>{const d=await api('GET','/api/'+c);(L[c]||[]).forEach(f=>f(d))};
+const watch=(c,f,e)=>{(L[c]=L[c]||[]).push(f);sync(c).catch(e)};
+setInterval(()=>Object.keys(L).forEach(c=>sync(c).catch(()=>{})),15000);
+const ref=(c,i)=>({set:async d=>{await api('PUT','/api/'+c+'/'+i,d);sync(c)},update:async d=>{await api('PATCH','/api/'+c+'/'+i,d);sync(c)},delete:async()=>{await api('DELETE','/api/'+c+'/'+i);sync(c)}});
+return{collection:c=>({doc:i=>ref(c,i),onSnapshot:(f,e)=>watch(c,d=>f({docs:d.map(x=>({id:x.id,data:()=>x.data}))}),e)}),
+doc:p=>{const[c,i]=p.split('/');return Object.assign(ref(c,i),{onSnapshot:(f,e)=>watch(c,d=>{const x=d.find(y=>y.id===i);f({exists:!!x,data:()=>x&&x.data})},e)})}}}};
+</script>
+<script>
+(function(){'use strict';
+const PLANS=[{id:'mensuel',label:'Mensuel',days:30,price:15000},{id:'trimestriel',label:'Trimestriel',days:90,price:40000},{id:'annuel',label:'Annuel',days:365,price:140000},{id:'semaine',label:'Semaine',days:7,price:5000}];
+const MODES=[{id:'wave',label:'Wave'},{id:'om',label:'Orange Money'},{id:'cash',label:'Espèces'}];
+const VIEWS={accueil:'Accueil',membres:'Membres',paiements:'Paiements',reglages:'Réglages'};
+const COLS=['members','payments','checkins'],LS='gym-local-v2';
+const S={members:[],payments:[],checkins:[],settings:null};
+const ui={view:'accueil',q:'',cq:'',filter:'tous',store:'loading',loaded:{},slow:false,confirm:null,draft:{},err:null};
+let DB=null,tt;
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const iso=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const parse=s=>{const p=s.split('-').map(Number);return new Date(p[0],p[1]-1,p[2],12)};
+const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return iso(d)};
+const diff=(a,b)=>Math.round((parse(a)-parse(b))/864e5);
+const today=()=>iso(new Date());
+const fd=(s,o)=>parse(s).toLocaleDateString('fr-FR',o);
+const fmtDate=s=>fd(s,{day:'numeric',month:'short',year:'numeric'});
+const num=n=>new Intl.NumberFormat('fr-FR').format(Math.round(n||0)).replace(/[\u202f\u00a0]/g,' ');
+const fcfa=n=>num(n)+' FCFA';
+const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const sum=a=>a.reduce((t,p)=>t+(p.montant||0),0);
+const plans=()=>(S.settings&&S.settings.plans&&S.settings.plans.length)?S.settings.plans:PLANS;
+const gymName=()=>(S.settings&&S.settings.name)||'Ma salle de sport';
+const planOf=id=>plans().find(p=>p.id===id)||{id,label:id,days:30,price:0};
+const modeLabel=id=>(MODES.find(m=>m.id===id)||{label:id}).label;
+const ini=n=>String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+const here=id=>S.checkins.some(c=>c.memberId===id&&c.date===today());
+function status(m){const d=diff(m.end,today());return d<0?{k:'expire',label:'Expiré',days:d}:d<=7?{k:'bientot',label:'À renouveler',days:d}:{k:'actif',label:'Actif',days:d}}
+const dueText=s=>s.days<0?'Expiré depuis '+(-s.days)+' j':s.days===0?'Expire aujourd’hui':'Expire dans '+s.days+' j';
+const pill=s=>`<span class="pill ${s.k==='actif'?'ok':s.k}">${s.label}</span>`;
+const av=(m,s)=>`<span class="av ${s.k}" aria-hidden="true">${esc(ini(m.nom))}</span>`;
+function waLink(m){const d=(m.tel||'').replace(/\D/g,'');if(!d)return null;const n=d.length===9?'221'+d:d,p=String(m.nom||'').split(' ')[0],ex=status(m).k==='expire';
+const msg=`Bonjour ${p}, votre abonnement à ${gymName()} ${ex?'est arrivé à échéance le ':'se termine le '}${fmtDate(m.end)}. ${ex?'Passez à la salle ou répondez ici pour le renouveler.':'Pensez à le renouveler pour continuer à vous entraîner.'}`;
+return 'https://wa.me/'+n+'?text='+encodeURIComponent(msg)}
+const ic={accueil:'<path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',membres:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6M16 4.8a3.5 3.5 0 0 1 0 6.4M18 14.4c2.2.7 3.5 2.6 3.5 5.6"/>',paiements:'<rect x="2.5" y="5" width="19" height="14" rx="2.5"/><path d="M2.5 10h19M6.5 15h4"/>',reglages:'<circle cx="12" cy="12" r="3"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3M5.3 5.3l2.1 2.1M16.6 16.6l2.1 2.1M18.7 5.3l-2.1 2.1M7.4 16.6l-2.1 2.1"/>'};
+const icon=k=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+ic[k]+'</svg>';
+
+function seed(T){const N=[['Moussa Diop','77 000 00 01','mensuel',4],['Awa Ndiaye','78 000 00 02','trimestriel',42],['Cheikh Fall','77 000 00 03','mensuel',27],['Fatou Sow','76 000 00 04','annuel',155],['Ibrahima Ba','77 000 00 05','mensuel',34],['Aminata Sy','78 000 00 06','mensuel',29],['Ousmane Gueye','70 000 00 07','trimestriel',105],['Khadija Mbaye','77 000 00 08','mensuel',7],['Mamadou Sarr','76 000 00 09','mensuel',2],['Rokhaya Diouf','78 000 00 10','trimestriel',84]];
+const members=[],payments=[],checkins=[];
+N.forEach((b,i)=>{const id='m_ex'+pad(i+1),p=PLANS.find(x=>x.id===b[2]),st=addDays(T,-b[3]);members.push({id,nom:b[0],tel:b[1],planId:b[2],start:st,end:addDays(st,p.days),createdAt:st,exemple:true});payments.push({id:'p_ex'+pad(i+1),memberId:id,nom:b[0],planId:b[2],montant:p.price,mode:MODES[i%3].id,date:st,exemple:true})});
+members.filter(m=>m.end>=T).forEach((m,i)=>{for(let d=6;d>=0;d--){if(!(d?(i+d)%3!==0:i%3===0))continue;const day=addDays(T,-d);checkins.push({id:day+'_'+m.id,memberId:m.id,nom:m.nom,date:day,heure:pad(6+(i*5+d*3)%14)+':'+pad((i*13+d*7)%60),exemple:true})}});
+return{members,payments,checkins,settings:{name:'Teranga Fit',plans:PLANS}}}
+
+function saveLocal(){try{localStorage.setItem(LS,JSON.stringify({members:S.members,payments:S.payments,checkins:S.checkins,settings:S.settings}))}catch(e){}}
+function loadLocal(){try{const r=localStorage.getItem(LS);return r?JSON.parse(r):null}catch(e){return null}}
+function clean(o){const r={};Object.keys(o).forEach(k=>{if(o[k]!==undefined&&k!=='id')r[k]=o[k]});return r}
+async function put(col,id,data){data=clean(data);if(DB){await DB.collection(col).doc(id).set(data);return}S[col]=S[col].filter(x=>x.id!==id).concat([Object.assign({id},data)]);saveLocal();render()}
+async function patch(col,id,part){part=clean(part);if(DB){await DB.collection(col).doc(id).update(part);return}S[col]=S[col].map(x=>x.id===id?Object.assign({},x,part):x);saveLocal();render()}
+async function del(col,id){if(DB){await DB.collection(col).doc(id).delete();return}S[col]=S[col].filter(x=>x.id!==id);saveLocal();render()}
+async function putSettings(d){if(DB){await DB.doc('settings/main').set(d);return}S.settings=d;saveLocal();render()}
+function subscribe(){COLS.forEach(c=>DB.collection(c).onSnapshot(s=>{S[c]=s.docs.map(d=>Object.assign({id:d.id},d.data()));ui.loaded[c]=true;render()},()=>{ui.err='Les données ne sont plus accessibles pour ce compte.';render()}));
+DB.doc('settings/main').onSnapshot(s=>{S.settings=s.exists?s.data():null;render()},()=>{});
+setTimeout(()=>{if(!(ui.loaded.members&&ui.loaded.payments&&ui.loaded.checkins)){ui.slow=true;render()}},10000)}
+async function guard(fn){try{await fn();return true}catch(e){toast(e&&e.code==='invalid_argument'?'Modification refusée : accès en lecture seule.':'L’enregistrement a échoué. Réessayez dans un instant.');return false}}
+function toast(m){const t=$('#toast');t.innerHTML='<div class="toast">'+esc(m)+'</div>';clearTimeout(tt);tt=setTimeout(()=>{t.innerHTML=''},4200)}
+
+async function checkIn(id){const m=S.members.find(x=>x.id===id);if(!m)return;const t=today();
+if(here(id)){toast(m.nom+' est déjà enregistré aujourd’hui.');return}
+if(status(m).k==='expire'){toast(m.nom+' : abonnement expiré. Renouvelez avant l’entrée.');openForm(m);return}
+ui.cq='';const ok=await guard(()=>put('checkins',t+'_'+id,{memberId:id,nom:m.nom,date:t,heure:pad(new Date().getHours())+':'+pad(new Date().getMinutes())}));
+if(ok){toast('Entrée enregistrée : '+m.nom);setTimeout(()=>{const c=$('#cq');if(c)c.focus()},60)}}
+async function deleteMember(id){ui.confirm=null;if(await guard(()=>del('members',id)))toast('Membre supprimé. Ses paiements restent dans l’historique.');render()}
+async function deleteExamples(){ui.confirm=null;const ok=await guard(async()=>{for(const c of COLS){for(const x of S[c].filter(y=>y.exemple))await del(c,x.id)}});if(ok)toast('Données d’exemple supprimées.');render()}
+async function saveSettings(){const name=(ui.draft.name!=null?ui.draft.name:gymName()).trim()||'Ma salle de sport';
+const np=plans().map(p=>{const v=ui.draft['p_'+p.id];return{id:p.id,label:p.label,days:p.days,price:v!=null?Math.max(0,Math.round(Number(v)||0)):p.price}});
+if(await guard(()=>putSettings({name,plans:np}))){ui.draft={};toast('Réglages enregistrés.');render()}}
+
+function openForm(m){const renew=!!m,pid=renew?m.planId:plans()[0].id,p=planOf(pid);
+$('#sheet').innerHTML=`<div class="scrim" data-act="close"></div><form class="sheet" id="sf" data-renew="${renew?esc(m.id):''}" aria-label="${renew?'Renouveler':'Nouveau membre'}"><h2>${renew?'Renouveler l’abonnement':'Nouveau membre'}</h2>`+
+(renew?`<div><b>${esc(m.nom)}</b> <span class="mu">Échéance actuelle : ${fmtDate(m.end)}</span></div>`:`<label>Nom complet<input class="field" id="f-nom" required autocomplete="off" placeholder="Prénom Nom"></label><label>Téléphone WhatsApp<input class="field" id="f-tel" inputmode="tel" autocomplete="off" placeholder="77 000 00 00"></label>`)+
+`<div class="lb">Formule</div><div class="opts">${plans().map(x=>`<label class="opt"><input type="radio" name="plan" value="${esc(x.id)}"${x.id===pid?' checked':''}><span>${esc(x.label)}<small>${fcfa(x.price)}</small></span></label>`).join('')}</div>`+
+`<label>Montant reçu (FCFA)<input class="field" id="f-montant" type="number" min="0" step="500" value="${p.price}" required></label><div class="lb">Payé par</div><div class="opts">${MODES.map((x,i)=>`<label class="opt"><input type="radio" name="mode" value="${x.id}"${i?'':' checked'}><span>${x.label}</span></label>`).join('')}</div>`+
+(renew?'':`<label>Début de l’abonnement<input class="field" id="f-debut" type="date" value="${today()}" required></label>`)+
+`<div class="prev" id="pv"></div><div class="foot"><button type="button" class="btn" data-act="close">Annuler</button><button type="submit" class="btn pri">${renew?'Enregistrer le renouvellement':'Ajouter le membre'}</button></div></form>`;
+preview();const f=$('#f-nom');if(f)f.focus()}
+const closeSheet=()=>{$('#sheet').innerHTML=''};
+function formDates(){const f=$('#sf');if(!f)return null;const rid=f.getAttribute('data-renew'),p=planOf(document.querySelector('input[name=plan]:checked').value);let st;
+if(rid){const m=S.members.find(x=>x.id===rid);if(!m)return null;st=diff(m.end,today())>=0?m.end:today()}else st=($('#f-debut')&&$('#f-debut').value)||today();
+return{start:st,end:addDays(st,p.days),plan:p}}
+function preview(){const d=formDates(),e=$('#pv');if(d&&e)e.textContent='Valable du '+fmtDate(d.start)+' au '+fmtDate(d.end)+' ('+d.plan.days+' jours).'}
+async function submitForm(){const f=$('#sf');if(!f)return;const rid=f.getAttribute('data-renew'),d=formDates();if(!d)return;
+const montant=Math.max(0,Math.round(Number($('#f-montant').value)||0)),mode=document.querySelector('input[name=mode]:checked').value;let ok;
+if(rid){const m=S.members.find(x=>x.id===rid);ok=await guard(async()=>{await patch('members',m.id,{planId:d.plan.id,start:d.start,end:d.end});await put('payments',uid('p'),{memberId:m.id,nom:m.nom,planId:d.plan.id,montant,mode,date:today()})});if(ok){closeSheet();toast('Abonnement renouvelé jusqu’au '+fmtDate(d.end)+'.')}}
+else{const nom=$('#f-nom').value.trim();if(!nom){$('#f-nom').focus();return}const tel=$('#f-tel').value.trim(),id=uid('m');
+ok=await guard(async()=>{await put('members',id,{nom,tel,planId:d.plan.id,start:d.start,end:d.end,createdAt:today()});await put('payments',uid('p'),{memberId:id,nom,planId:d.plan.id,montant,mode,date:today()})});if(ok){closeSheet();toast(nom+' a été ajouté.')}}}
+
+const match=(m,q)=>(m.nom||'').toLowerCase().includes(q)||(m.tel||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));
+const found=()=>{const q=ui.cq.trim().toLowerCase();return q?S.members.filter(m=>match(m,q)).slice(0,5):[]};
+function resRow(m){const s=status(m),id=esc(m.id);return`<li class="rs">${av(m,s)}<div class="w"><b>${esc(m.nom)}</b><span>${esc(planOf(m.planId).label)}, ${dueText(s)}</span></div>${here(m.id)?'<span class="pill ok">Présent</span>':s.k==='expire'?`<button class="btn pri sm" data-act="renew" data-id="${id}">Renouveler</button>`:`<button class="btn pri" data-act="checkin" data-id="${id}">Enregistrer l’entrée</button>`}</li>`}
+function resHtml(){if(ui.cq.trim()){const f=found();return f.length?'<ul class="l">'+f.map(resRow).join('')+'</ul>':'<div class="sub">Aucun membre trouvé. Ajoutez-le avec « Nouveau membre ».</div>'}
+const l=S.checkins.filter(c=>c.date===today()).sort((a,b)=>(b.heure||'').localeCompare(a.heure||'')).slice(0,6);
+return l.length?'<div class="chips">'+l.map(c=>`<span class="chip">${esc(String(c.nom).split(' ')[0])} ${esc(c.heure||'')}</span>`).join('')+'</div>':'<div class="sub">Aucune entrée pour le moment. Tapez un nom ou un numéro pour enregistrer la première.</div>'}
+function kpis(){const ms=S.members.map(status),mo=sum(S.payments.filter(p=>(p.date||'').startsWith(today().slice(0,7)))),n=k=>ms.filter(s=>k==='actifs'?s.k!=='expire':s.k===k).length;
+const k=(v,val,l,c)=>`<button class="kpi ${c||''}" data-act="goto" data-v="${v}"><b>${val}</b><span>${l}</span></button>`;
+return'<div class="kpis">'+k('actifs',n('actifs'),'Abonnements en cours')+k('bientot',n('bientot'),'À renouveler cette semaine',n('bientot')?'wn':'')+k('expires',n('expire'),'Abonnements expirés',n('expire')?'bd':'')+`<button class="kpi" data-act="goto-pay"><b>${num(mo)} <small>FCFA</small></b><span>Encaissé ce mois-ci</span></button></div>`}
+function relance(){const r=S.members.map(m=>({m,s:status(m)})).filter(x=>x.s.k!=='actif'&&x.s.days>=-30).sort((a,b)=>a.s.days-b.s.days);
+return'<section class="card"><h2>À relancer</h2>'+(r.length?'<ul class="l">'+r.map(x=>{const w=waLink(x.m);return`<li class="row">${av(x.m,x.s)}<div class="w"><b>${esc(x.m.nom)}</b><span>${esc(planOf(x.m.planId).label)}, ${dueText(x.s)}</span></div>${w?`<a class="btn sm wa" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`:''}<button class="btn sm pri" data-act="renew" data-id="${esc(x.m.id)}">Renouveler</button></li>`}).join('')+'</ul>':'<div class="empty">Tout le monde est à jour.</div>')+'</section>'}
+function week(){const t=today(),d=[0,1,2,3,4,5,6].map(i=>addDays(t,i-6)),c=d.map(x=>S.checkins.filter(k=>k.date===x).length),mx=Math.max(1,...c);
+return'<section class="card"><h2>Fréquentation, 7 derniers jours</h2><div class="wk" role="img" aria-label="Entrées par jour">'+d.map((x,i)=>`<div class="col${x===t?' td':''}"><span>${c[i]}</span><i style="height:${Math.round(c[i]/mx*70)}%"></i><em>${fd(x,{weekday:'short'}).replace('.','')}</em></div>`).join('')+'</div></section>'}
+function vAccueil(){const t=today(),n=S.checkins.filter(c=>c.date===t).length,h=fd(t,{weekday:'long',day:'numeric',month:'long'});
+return`<header class="hd"><div><h1>${h.charAt(0).toUpperCase()+h.slice(1)}</h1><span class="mu">${n} présent${n>1?'s':''} aujourd’hui</span></div><button class="btn pri" data-act="new">+ Nouveau membre</button></header>
+<section class="hero"><h2>Qui arrive ?</h2><input class="big" id="cq" type="search" data-model="cq" placeholder="Nom ou téléphone du membre" value="${esc(ui.cq)}" autocomplete="off" aria-label="Rechercher un membre pour enregistrer son entrée"><div id="res">${resHtml()}</div></section>`+kpis()+`<div class="cols">${relance()}${week()}</div>`}
+
+const fl=(x,k)=>k==='tous'||(k==='actifs'?x.s.k!=='expire':k==='bientot'?x.s.k==='bientot':x.s.k==='expire');
+function actions(m,s){const id=esc(m.id),w=waLink(m),c=ui.confirm&&ui.confirm.id===m.id;
+let o=here(m.id)?'<span class="pill ok">Présent</span>':s.k==='expire'?'':`<button class="btn sm" data-act="checkin" data-id="${id}">Entrée</button>`;
+o+=`<button class="btn sm${s.k!=='actif'?' pri':''}" data-act="renew" data-id="${id}">Renouveler</button>`;
+if(s.k!=='actif'&&w)o+=`<a class="btn sm wa" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`;
+return o+(c?`<span class="cf">Supprimer ?<button class="btn sm gh" data-act="del" data-id="${id}">Oui</button><button class="btn sm" data-act="cancel">Non</button></span>`:`<button class="btn sm gh" data-act="ask-del" data-id="${id}" aria-label="Supprimer ${esc(m.nom)}">Supprimer</button>`)}
+function mlist(){const q=ui.q.trim().toLowerCase();
+if(!S.members.length)return'<div class="empty">Aucun membre pour l’instant. Ajoutez le premier avec « Nouveau membre ».</div>';
+const rows=S.members.map(m=>({m,s:status(m)})).filter(x=>fl(x,ui.filter)&&(!q||match(x.m,q))).sort((a,b)=>a.m.end<b.m.end?-1:a.m.end>b.m.end?1:0);
+if(!rows.length)return'<div class="empty">Aucun membre ne correspond.</div>';
+return'<ul class="l">'+rows.map(({m,s})=>{const pl=planOf(m.planId),pc=Math.max(0,Math.min(100,Math.round(s.days/pl.days*100)));
+return`<li class="mem">${av(m,s)}<div class="w"><b>${esc(m.nom)}${m.exemple?' <span class="mu">(exemple)</span>':''}</b><span>${esc(m.tel||'Pas de téléphone')}</span></div><div class="plan"><div class="sp"><span>${esc(pl.label)}, jusqu’au ${fmtDate(m.end)}</span>${pill(s)}</div><div class="pg ${s.k}"><i style="width:${pc}%"></i></div></div><div class="acts">${actions(m,s)}</div></li>`}).join('')+'</ul>'}
+function vMembres(){const all=S.members.map(m=>({m,s:status(m)})),chip=(k,l)=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${ui.filter===k}">${l} ${all.filter(x=>fl(x,k)).length}</button>`;
+return`<header class="hd"><h1>Membres</h1><button class="btn pri" data-act="new">+ Nouveau membre</button></header><input class="field" id="q" type="search" data-model="q" placeholder="Rechercher par nom ou téléphone" value="${esc(ui.q)}" autocomplete="off" aria-label="Rechercher un membre"><div class="chips">${chip('tous','Tous')}${chip('actifs','En cours')}${chip('bientot','À renouveler')}${chip('expires','Expirés')}</div><section class="card" id="mlist">${mlist()}</section>`}
+function vPay(){const t=today(),mp=S.payments.filter(p=>(p.date||'').startsWith(t.slice(0,7))),tot=sum(mp),mn=fd(t,{month:'long',year:'numeric'});
+const bars=MODES.map(md=>{const v=sum(mp.filter(p=>p.mode===md.id));return`<div class="md"><span class="tag"><i class="dot ${md.id}"></i>${md.label}</span><div class="pg ${md.id}"><i style="width:${tot?Math.round(v/tot*100):0}%"></i></div><b>${fcfa(v)}</b></div>`}).join('');
+const l=S.payments.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0).slice(0,80);
+return`<header class="hd"><h1>Paiements</h1></header><section class="card"><div class="hd"><h2>Encaissé en ${esc(mn)}</h2><b style="font:800 24px var(--fd)">${fcfa(tot)}</b></div>${bars}</section><section class="card"><h2>Historique</h2>`+
+(l.length?'<ul class="l">'+l.map(p=>`<li class="pay"><span class="d mu">${fd(p.date,{day:'numeric',month:'short'})}</span><span class="n"><b>${esc(p.nom)}</b> <span class="mu">${esc(planOf(p.planId).label)}</span></span><span class="m tag"><i class="dot ${esc(p.mode)}"></i>${esc(modeLabel(p.mode))}</span><span class="a">${fcfa(p.montant)}</span></li>`).join('')+'</ul>':'<div class="empty">Aucun paiement. Ils apparaissent quand vous ajoutez un membre ou renouvelez un abonnement.</div>')+'</section>'}
+function vReg(){const nm=ui.draft.name!=null?ui.draft.name:gymName(),ex=COLS.some(c=>S[c].some(x=>x.exemple)),c=ui.confirm&&ui.confirm.type==='ex';
+return`<header class="hd"><h1>Réglages</h1><a class="btn" href="/logout">Se déconnecter</a></header><section class="card"><h2>Ma salle</h2><div class="set"><label>Nom affiché dans le menu<input class="field" data-draft="name" value="${esc(nm)}" maxlength="60"></label></div><h2>Tarifs (FCFA)</h2><div class="set">${plans().map(p=>`<label>${esc(p.label)}, ${p.days} jours<input class="field" data-draft="p_${esc(p.id)}" type="number" min="0" step="500" value="${esc(ui.draft['p_'+p.id]!=null?ui.draft['p_'+p.id]:p.price)}"></label>`).join('')}</div><div><button class="btn pri" data-act="save">Enregistrer</button></div></section>
+<section class="card"><h2>Données</h2><p class="sub" style="margin:0">${ui.store==='local'?'Mode démonstration : les données restent dans ce navigateur et ne sont pas partagées avec d’autres appareils.':'Les données sont enregistrées et partagées avec les personnes autorisées.'}</p>`+
+(ex?(c?'<div class="cf">Supprimer tous les exemples ?<button class="btn sm gh" data-act="del-ex">Oui, supprimer</button><button class="btn sm" data-act="cancel">Annuler</button></div>':'<div><button class="btn gh" data-act="ask-ex">Supprimer les données d’exemple</button></div>'):'')+'</section>'}
+const V={accueil:vAccueil,membres:vMembres,paiements:vPay,reglages:vReg};
+
+function render(){const app=$('#app');if(!app)return;const a=document.activeElement,fid=a&&a.id&&app.contains(a)?a.id:null;let pos=null;try{pos=fid?a.selectionStart:null}catch(e){}
+let body;const em=t=>`<div class="empty">${t}</div>`;
+if(ui.store==='loading')body=em('Chargement…');else if(ui.err)body=em(esc(ui.err));
+else if(ui.store==='db'&&!(ui.loaded.members&&ui.loaded.payments&&ui.loaded.checkins))body=em(ui.slow?'Les données mettent du temps à arriver. Vérifiez votre connexion.':'Chargement…');
+else body=V[ui.view]();
+app.innerHTML=`<div class="shell"><aside class="side"><div class="logo"><span class="mark">${esc(ini(gymName()))}</span><b>${esc(gymName())}<small>Gestion de salle</small></b></div><nav class="nav" aria-label="Sections">${Object.keys(VIEWS).map(v=>`<a href="#${v}"${v===ui.view?' aria-current="page"':''}>${icon(v)}${VIEWS[v]}</a>`).join('')}</nav><a class="out" href="/logout">Se déconnecter</a></aside><main class="main">${ui.store==='local'?'<div class="demo">Démonstration : données d’exemple enregistrées sur cet appareil.</div>':''}${body}</main></div>`;
+if(fid){const e=document.getElementById(fid);if(e){e.focus();try{if(pos!=null)e.setSelectionRange(pos,pos)}catch(x){}}}}
+
+document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.getAttribute('data-act'),id=b.getAttribute('data-id'),m=id?S.members.find(x=>x.id===id):null;
+if(a==='new')openForm(null);else if(a==='renew'&&m)openForm(m);else if(a==='checkin')checkIn(id);
+else if(a==='filter'){ui.filter=b.getAttribute('data-v');render()}
+else if(a==='goto'){ui.filter=b.getAttribute('data-v');ui.q='';location.hash='membres'}
+else if(a==='goto-pay')location.hash='paiements';
+else if(a==='ask-del'){ui.confirm={type:'m',id};render()}else if(a==='cancel'){ui.confirm=null;render()}else if(a==='del')deleteMember(id);
+else if(a==='ask-ex'){ui.confirm={type:'ex'};render()}else if(a==='del-ex')deleteExamples();
+else if(a==='save')saveSettings();else if(a==='close')closeSheet()});
+document.addEventListener('input',e=>{const t=e.target,md=t.getAttribute&&t.getAttribute('data-model'),dr=t.getAttribute&&t.getAttribute('data-draft');
+if(md){ui[md]=t.value;if(md==='cq'){$('#res').innerHTML=resHtml()}else $('#mlist').innerHTML=mlist()}else if(dr)ui.draft[dr]=t.value});
+document.addEventListener('change',e=>{const t=e.target;if(t.name==='plan'){$('#f-montant').value=planOf(t.value).price;preview()}else if(t.id==='f-debut')preview()});
+document.addEventListener('submit',e=>{if(e.target.id==='sf'){e.preventDefault();submitForm()}});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sf'))closeSheet();else if(e.key==='Enter'&&e.target.id==='cq'){const f=found();if(f.length===1)checkIn(f[0].id)}});
+function route(){const h=(location.hash||'').replace('#','');ui.view=V[h]?h:'accueil';ui.confirm=null;render();window.scrollTo(0,0)}
+window.addEventListener('hashchange',route);
+async function init(){route();let db=null;try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){db=null}
+if(db){DB=db;ui.store='db';render();subscribe()}else{ui.store='local';const s=loadLocal()||seed(today());S.members=s.members;S.payments=s.payments;S.checkins=s.checkins;S.settings=s.settings;render()}}
+init();
+})();
+</script></body></html>

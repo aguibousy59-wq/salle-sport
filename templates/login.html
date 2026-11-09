@@ -1,0 +1,24 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Connexion</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap">
+<style>
+:root{--bg:#F1F5F6;--sf:#fff;--ink:#0E2130;--mu:#566876;--ln:#D6DFE4;--ac:#C84C09;--ai:#fff;--nav:#0B2A3C;--bd:#B42318;--bdb:#FBDFDB;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#09131B;--sf:#112230;--ink:#E9F1F5;--mu:#93A6B3;--ln:#223747;--ac:#FF8A47;--ai:#1A0B02;--nav:#071018;--bd:#FF8B82;--bdb:#3D1916;color-scheme:dark}}
+*{box-sizing:border-box}body{margin:0;min-height:100dvh;display:grid;grid-template-columns:1.1fr 1fr;background:var(--bg);color:var(--ink);font:15px/1.45 "DM Sans",system-ui,sans-serif}
+.pitch{background:var(--nav);color:#EAF3F7;padding:48px;display:flex;flex-direction:column;justify-content:flex-end;gap:14px}
+.pitch h1{font:800 44px/1.05 "Bricolage Grotesque",system-ui,sans-serif;margin:0;max-width:11ch}.pitch p{margin:0;max-width:36ch;opacity:.78;font-size:17px}
+.mark{width:46px;height:46px;border-radius:14px;background:var(--ac);color:var(--ai);display:grid;place-items:center;font:800 20px "Bricolage Grotesque",sans-serif}
+.pane{display:grid;place-items:center;padding:24px}
+form{width:min(380px,100%);display:flex;flex-direction:column;gap:14px}
+h2{font:800 28px "Bricolage Grotesque",system-ui,sans-serif;margin:0}label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:13.5px}
+input{font:inherit;color:inherit;background:var(--sf);border:1px solid var(--ln);border-radius:10px;padding:13px 14px}
+input:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:14px;background:var(--ac);color:var(--ai);cursor:pointer}
+.err{background:var(--bdb);color:var(--bd);border-radius:10px;padding:10px 12px;font-size:13.5px;font-weight:500}.mu{color:var(--mu);font-size:13.5px;margin:0}
+@media(max-width:760px){body{grid-template-columns:1fr;grid-template-rows:auto 1fr}.pitch{padding:28px 24px;gap:10px}.pitch h1{font-size:30px;max-width:none}.pitch p{display:none}}
+</style></head><body>
+<section class="pitch"><span class="mark" aria-hidden="true">GS</span><h1>Votre salle, sous contrôle.</h1><p>Abonnements, entrées, paiements Wave et Orange Money, relances WhatsApp.</p></section>
+<main class="pane"><form method="post" autocomplete="on"><h2>Connexion</h2><p class="mu">Entrez les identifiants de votre salle.</p>
+{% if error %}<div class="err" role="alert">{{ error }}</div>{% endif %}
+<label>Identifiant<input name="username" autocomplete="username" autocapitalize="none" required autofocus></label>
+<label>Mot de passe<input name="password" type="password" autocomplete="current-password" required></label>
+<button type="submit">Se connecter</button></form></main></body></html>
