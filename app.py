@@ -61,6 +61,9 @@ def init_db():
     con.close()
 
 
+init_db()
+
+
 def create_user(username, password, gym):
     init_db()
     con = sqlite3.connect(DB_PATH)
