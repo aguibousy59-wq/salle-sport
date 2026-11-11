@@ -51,6 +51,8 @@ h1,h2{font-family:var(--fd);margin:0;letter-spacing:-.01em;text-wrap:balance}h1{
 .dot{width:10px;height:10px;border-radius:50%;background:var(--mu);display:inline-block}.dot.wave{background:var(--wave)}.dot.om{background:var(--om)}.dot.cash{background:var(--cash)}
 .pay{display:grid;grid-template-columns:70px minmax(0,1fr) 140px auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--ln)}.pay:first-child{border-top:0}.pay .a{font-weight:600;text-align:right}
 .empty{padding:20px;text-align:center;color:var(--mu);background:var(--s2);border-radius:12px}
+.qr-reader{width:min(100%,420px);margin:12px auto}.qr-card{display:flex;flex-direction:column;align-items:center;gap:12px;text-align:center;padding:20px}.qr-card h2{margin:0}.qr-image{min-height:220px;display:grid;place-items:center;background:#fff;padding:12px;border-radius:12px}.qr-credit{font:800 22px var(--fd)}.qr-tools{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+@media print{body>*:not(#sheet){display:none!important}.scrim,.qr-tools{display:none!important}.sheet.qr-sheet{position:static;transform:none;width:100%;max-height:none;overflow:visible;border:0;box-shadow:none;background:#fff;color:#000}.qr-card{border:2px solid #222;border-radius:16px;max-width:380px;margin:40px auto}.qr-card .mu{color:#333}}
 .set{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.set label,.sheet label{display:flex;flex-direction:column;gap:5px;font-weight:600;font-size:13.5px}
 .scrim{position:fixed;inset:0;background:rgba(5,12,18,.6);z-index:20}
 .sheet{position:fixed;z-index:21;left:50%;top:50%;transform:translate(-50%,-50%);width:min(500px,calc(100% - 28px));max-height:calc(100% - 28px);overflow-y:auto;background:var(--sf);border:1px solid var(--ln);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:12px}
@@ -79,15 +81,17 @@ const ref=(c,i)=>({set:async d=>{await api('PUT','/api/'+c+'/'+i,d);sync(c)},upd
 return{collection:c=>({doc:i=>ref(c,i),onSnapshot:(f,e)=>watch(c,d=>f({docs:d.map(x=>({id:x.id,data:()=>x.data}))}),e)}),
 doc:p=>{const[c,i]=p.split('/');return Object.assign(ref(c,i),{onSnapshot:(f,e)=>watch(c,d=>{const x=d.find(y=>y.id===i);f({exists:!!x,data:()=>x&&x.data})},e)})}}}};
 </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
 <script>
 (function(){'use strict';
-const PLANS=[{id:'mensuel',label:'Mensuel',days:30,price:15000},{id:'trimestriel',label:'Trimestriel',days:90,price:40000},{id:'annuel',label:'Annuel',days:365,price:140000},{id:'semaine',label:'Semaine',days:7,price:5000}];
+const PLANS=[{id:'mensuel',label:'Mensuel',days:30,price:15000,credits:12},{id:'trimestriel',label:'Trimestriel',days:90,price:40000,credits:36},{id:'annuel',label:'Annuel',days:365,price:140000,credits:144},{id:'semaine',label:'Semaine',days:7,price:5000,credits:3}];
 const MODES=[{id:'wave',label:'Wave'},{id:'om',label:'Orange Money'},{id:'cash',label:'Espèces'}];
 const VIEWS={accueil:'Accueil',membres:'Membres',paiements:'Paiements',reglages:'Réglages'};
 const COLS=['members','payments','checkins'],LS='gym-local-v2';
 const S={members:[],payments:[],checkins:[],settings:null};
-const ui={view:'accueil',q:'',cq:'',filter:'tous',store:'loading',loaded:{},slow:false,confirm:null,draft:{},err:null};
-let DB=null,tt;
+const ui={view:'accueil',q:'',cq:'',filter:'tous',store:'loading',loaded:{},slow:false,confirm:null,draft:{},err:null,scanning:false};
+let DB=null,tt,scanner=null;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pad=n=>String(n).padStart(2,'0');
@@ -104,10 +108,11 @@ const uid=p=>p+'_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6)
 const sum=a=>a.reduce((t,p)=>t+(p.montant||0),0);
 const plans=()=>(S.settings&&S.settings.plans&&S.settings.plans.length)?S.settings.plans:PLANS;
 const gymName=()=>(S.settings&&S.settings.name)||'Ma salle de sport';
-const planOf=id=>plans().find(p=>p.id===id)||{id,label:id,days:30,price:0};
+const planOf=id=>{const p=plans().find(x=>x.id===id),base=PLANS.find(x=>x.id===id);return p?Object.assign({},base||{},p,{credits:p.credits??((base&&base.credits)||0)}):base||{id,label:id,days:30,price:0,credits:0}};
 const modeLabel=id=>(MODES.find(m=>m.id===id)||{label:id}).label;
 const ini=n=>String(n||'?').split(/\s+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
 const here=id=>S.checkins.some(c=>c.memberId===id&&c.date===today());
+const remainingCredits=m=>Math.max(0,planOf(m.planId).credits-S.checkins.filter(c=>c.memberId===m.id&&c.date>=m.start&&c.date<=today()).length);
 function status(m){const d=diff(m.end,today());return d<0?{k:'expire',label:'Expiré',days:d}:d<=7?{k:'bientot',label:'À renouveler',days:d}:{k:'actif',label:'Actif',days:d}}
 const dueText=s=>s.days<0?'Expiré depuis '+(-s.days)+' j':s.days===0?'Expire aujourd’hui':'Expire dans '+s.days+' j';
 const pill=s=>`<span class="pill ${s.k==='actif'?'ok':s.k}">${s.label}</span>`;
@@ -140,12 +145,21 @@ function toast(m){const t=$('#toast');t.innerHTML='<div class="toast">'+esc(m)+'
 async function checkIn(id){const m=S.members.find(x=>x.id===id);if(!m)return;const t=today();
 if(here(id)){toast(m.nom+' est déjà enregistré aujourd’hui.');return}
 if(status(m).k==='expire'){toast(m.nom+' : abonnement expiré. Renouvelez avant l’entrée.');openForm(m);return}
+const remaining=remainingCredits(m);if(remaining<=0){toast(m.nom+' : forfait épuisé. Renouvelez avant l’entrée.');openForm(m);return}
 ui.cq='';const ok=await guard(()=>put('checkins',t+'_'+id,{memberId:id,nom:m.nom,date:t,heure:pad(new Date().getHours())+':'+pad(new Date().getMinutes())}));
-if(ok){toast('Entrée enregistrée : '+m.nom);setTimeout(()=>{const c=$('#cq');if(c)c.focus()},60)}}
+if(ok){toast('Entrée enregistrée : '+m.nom+' — '+(remaining-1)+' crédit(s) restant(s).');setTimeout(()=>{const c=$('#cq');if(c)c.focus()},60)}}
+function showCard(m){if(!window.QRCode){toast('Le générateur QR ne s’est pas chargé. Vérifiez votre connexion.');return}
+const left=remainingCredits(m);$('#sheet').innerHTML=`<div class="scrim" data-act="close"></div><section class="sheet qr-sheet" aria-label="Carte QR de ${esc(m.nom)}"><div class="qr-card"><h2>${esc(gymName())}</h2><b>${esc(m.nom)}</b><div class="qr-image" id="qr-image"></div><div class="qr-credit">${left} crédit${left>1?'s':''} restant${left>1?'s':''}</div><span class="mu">${esc(planOf(m.planId).label)} · valable jusqu’au ${fmtDate(m.end)}</span></div><div class="qr-tools"><button class="btn pri" data-act="print-card">Imprimer la carte</button><button class="btn" data-act="close">Fermer</button></div></section>`;
+new QRCode($('#qr-image'),{text:'gymapp:'+m.id,width:196,height:196,correctLevel:QRCode.CorrectLevel.M})}
+async function stopScanner(){const current=scanner;scanner=null;ui.scanning=false;if(current){try{if(current.isScanning)await current.stop();current.clear()}catch(e){toast('La caméra n’a pas pu être arrêtée correctement.')}}}
+async function startScanner(){if(!window.Html5Qrcode){toast('Le lecteur QR ne s’est pas chargé. Vérifiez votre connexion.');return}
+ui.scanning=true;render();scanner=new Html5Qrcode('qr-reader');
+try{await scanner.start({facingMode:'environment'},{fps:10,qrbox:{width:240,height:240}},async code=>{if(!ui.scanning)return;const id=code.trim().replace(/^gymapp:/,'');const m=S.members.find(x=>x.id===id);if(!m){await stopScanner();toast('Cette carte QR ne correspond à aucun membre.');return}
+await stopScanner();await checkIn(m.id)},()=>{})}catch(e){ui.scanning=false;scanner=null;render();toast('Impossible d’ouvrir la caméra. Autorisez son accès et vérifiez que le site utilise HTTPS.')}}
 async function deleteMember(id){ui.confirm=null;if(await guard(()=>del('members',id)))toast('Membre supprimé. Ses paiements restent dans l’historique.');render()}
 async function deleteExamples(){ui.confirm=null;const ok=await guard(async()=>{for(const c of COLS){for(const x of S[c].filter(y=>y.exemple))await del(c,x.id)}});if(ok)toast('Données d’exemple supprimées.');render()}
 async function saveSettings(){const name=(ui.draft.name!=null?ui.draft.name:gymName()).trim()||'Ma salle de sport';
-const np=plans().map(p=>{const v=ui.draft['p_'+p.id];return{id:p.id,label:p.label,days:p.days,price:v!=null?Math.max(0,Math.round(Number(v)||0)):p.price}});
+const np=plans().map(p=>{const v=ui.draft['p_'+p.id],c=ui.draft['c_'+p.id];return{id:p.id,label:p.label,days:p.days,price:v!=null?Math.max(0,Math.round(Number(v)||0)):p.price,credits:c!=null?Math.max(0,Math.floor(Number(c)||0)):planOf(p.id).credits}});
 if(await guard(()=>putSettings({name,plans:np}))){ui.draft={};toast('Réglages enregistrés.');render()}}
 
 function openForm(m){const renew=!!m,pid=renew?m.planId:plans()[0].id,p=planOf(pid);
@@ -169,7 +183,7 @@ ok=await guard(async()=>{await put('members',id,{nom,tel,planId:d.plan.id,start:
 
 const match=(m,q)=>(m.nom||'').toLowerCase().includes(q)||(m.tel||'').replace(/\s/g,'').includes(q.replace(/\s/g,''));
 const found=()=>{const q=ui.cq.trim().toLowerCase();return q?S.members.filter(m=>match(m,q)).slice(0,5):[]};
-function resRow(m){const s=status(m),id=esc(m.id);return`<li class="rs">${av(m,s)}<div class="w"><b>${esc(m.nom)}</b><span>${esc(planOf(m.planId).label)}, ${dueText(s)}</span></div>${here(m.id)?'<span class="pill ok">Présent</span>':s.k==='expire'?`<button class="btn pri sm" data-act="renew" data-id="${id}">Renouveler</button>`:`<button class="btn pri" data-act="checkin" data-id="${id}">Enregistrer l’entrée</button>`}</li>`}
+function resRow(m){const s=status(m),id=esc(m.id),left=remainingCredits(m);return`<li class="rs">${av(m,s)}<div class="w"><b>${esc(m.nom)}</b><span>${esc(planOf(m.planId).label)}, ${dueText(s)} · ${left} crédit(s) restant(s)</span></div>${here(m.id)?'<span class="pill ok">Présent</span>':s.k==='expire'?`<button class="btn pri sm" data-act="renew" data-id="${id}">Renouveler</button>`:left===0?'<span class="pill expire">Crédits épuisés</span>':`<button class="btn pri" data-act="checkin" data-id="${id}">Enregistrer l’entrée</button>`}</li>`}
 function resHtml(){if(ui.cq.trim()){const f=found();return f.length?'<ul class="l">'+f.map(resRow).join('')+'</ul>':'<div class="sub">Aucun membre trouvé. Ajoutez-le avec « Nouveau membre ».</div>'}
 const l=S.checkins.filter(c=>c.date===today()).sort((a,b)=>(b.heure||'').localeCompare(a.heure||'')).slice(0,6);
 return l.length?'<div class="chips">'+l.map(c=>`<span class="chip">${esc(String(c.nom).split(' ')[0])} ${esc(c.heure||'')}</span>`).join('')+'</div>':'<div class="sub">Aucune entrée pour le moment. Tapez un nom ou un numéro pour enregistrer la première.</div>'}
@@ -182,12 +196,13 @@ function week(){const t=today(),d=[0,1,2,3,4,5,6].map(i=>addDays(t,i-6)),c=d.map
 return'<section class="card"><h2>Fréquentation, 7 derniers jours</h2><div class="wk" role="img" aria-label="Entrées par jour">'+d.map((x,i)=>`<div class="col${x===t?' td':''}"><span>${c[i]}</span><i style="height:${Math.round(c[i]/mx*70)}%"></i><em>${fd(x,{weekday:'short'}).replace('.','')}</em></div>`).join('')+'</div></section>'}
 function vAccueil(){const t=today(),n=S.checkins.filter(c=>c.date===t).length,h=fd(t,{weekday:'long',day:'numeric',month:'long'});
 return`<header class="hd"><div><h1>${h.charAt(0).toUpperCase()+h.slice(1)}</h1><span class="mu">${n} présent${n>1?'s':''} aujourd’hui</span></div><button class="btn pri" data-act="new">+ Nouveau membre</button></header>
-<section class="hero"><h2>Qui arrive ?</h2><input class="big" id="cq" type="search" data-model="cq" placeholder="Nom ou téléphone du membre" value="${esc(ui.cq)}" autocomplete="off" aria-label="Rechercher un membre pour enregistrer son entrée"><div id="res">${resHtml()}</div></section>`+kpis()+`<div class="cols">${relance()}${week()}</div>`}
+<section class="hero"><h2>Qui arrive ?</h2><input class="big" id="cq" type="search" data-model="cq" placeholder="Nom ou téléphone du membre" value="${esc(ui.cq)}" autocomplete="off" aria-label="Rechercher un membre pour enregistrer son entrée"><div class="qr-tools"><button class="btn" data-act="scan">Scanner une carte QR</button></div>${ui.scanning?'<div id="qr-reader" class="qr-reader"></div><button class="btn" data-act="stop-scan">Arrêter le scan</button>':''}<div id="res">${resHtml()}</div></section>`+kpis()+`<div class="cols">${relance()}${week()}</div>`}
 
 const fl=(x,k)=>k==='tous'||(k==='actifs'?x.s.k!=='expire':k==='bientot'?x.s.k==='bientot':x.s.k==='expire');
-function actions(m,s){const id=esc(m.id),w=waLink(m),c=ui.confirm&&ui.confirm.id===m.id;
-let o=here(m.id)?'<span class="pill ok">Présent</span>':s.k==='expire'?'':`<button class="btn sm" data-act="checkin" data-id="${id}">Entrée</button>`;
+function actions(m,s){const id=esc(m.id),w=waLink(m),c=ui.confirm&&ui.confirm.id===m.id,left=remainingCredits(m);
+let o=here(m.id)?'<span class="pill ok">Présent</span>':s.k==='expire'?'':left===0?'<span class="pill expire">Crédits épuisés</span>':`<button class="btn sm" data-act="checkin" data-id="${id}">Entrée</button>`;
 o+=`<button class="btn sm${s.k!=='actif'?' pri':''}" data-act="renew" data-id="${id}">Renouveler</button>`;
+o+=`<button class="btn sm" data-act="card" data-id="${id}">Carte QR</button>`;
 if(s.k!=='actif'&&w)o+=`<a class="btn sm wa" href="${w}" target="_blank" rel="noopener">WhatsApp</a>`;
 return o+(c?`<span class="cf">Supprimer ?<button class="btn sm gh" data-act="del" data-id="${id}">Oui</button><button class="btn sm" data-act="cancel">Non</button></span>`:`<button class="btn sm gh" data-act="ask-del" data-id="${id}" aria-label="Supprimer ${esc(m.nom)}">Supprimer</button>`)}
 function mlist(){const q=ui.q.trim().toLowerCase();
@@ -195,7 +210,7 @@ if(!S.members.length)return'<div class="empty">Aucun membre pour l’instant. Aj
 const rows=S.members.map(m=>({m,s:status(m)})).filter(x=>fl(x,ui.filter)&&(!q||match(x.m,q))).sort((a,b)=>a.m.end<b.m.end?-1:a.m.end>b.m.end?1:0);
 if(!rows.length)return'<div class="empty">Aucun membre ne correspond.</div>';
 return'<ul class="l">'+rows.map(({m,s})=>{const pl=planOf(m.planId),pc=Math.max(0,Math.min(100,Math.round(s.days/pl.days*100)));
-return`<li class="mem">${av(m,s)}<div class="w"><b>${esc(m.nom)}${m.exemple?' <span class="mu">(exemple)</span>':''}</b><span>${esc(m.tel||'Pas de téléphone')}</span></div><div class="plan"><div class="sp"><span>${esc(pl.label)}, jusqu’au ${fmtDate(m.end)}</span>${pill(s)}</div><div class="pg ${s.k}"><i style="width:${pc}%"></i></div></div><div class="acts">${actions(m,s)}</div></li>`}).join('')+'</ul>'}
+return`<li class="mem">${av(m,s)}<div class="w"><b>${esc(m.nom)}${m.exemple?' <span class="mu">(exemple)</span>':''}</b><span>${esc(m.tel||'Pas de téléphone')}</span></div><div class="plan"><div class="sp"><span>${esc(pl.label)}, jusqu’au ${fmtDate(m.end)}</span>${pill(s)}</div><div class="pg ${s.k}"><i style="width:${pc}%"></i></div><span class="mu">${remainingCredits(m)} / ${pl.credits} crédit(s) restant(s)</span></div><div class="acts">${actions(m,s)}</div></li>`}).join('')+'</ul>'}
 function vMembres(){const all=S.members.map(m=>({m,s:status(m)})),chip=(k,l)=>`<button class="chip" data-act="filter" data-v="${k}" aria-pressed="${ui.filter===k}">${l} ${all.filter(x=>fl(x,k)).length}</button>`;
 return`<header class="hd"><h1>Membres</h1><button class="btn pri" data-act="new">+ Nouveau membre</button></header><input class="field" id="q" type="search" data-model="q" placeholder="Rechercher par nom ou téléphone" value="${esc(ui.q)}" autocomplete="off" aria-label="Rechercher un membre"><div class="chips">${chip('tous','Tous')}${chip('actifs','En cours')}${chip('bientot','À renouveler')}${chip('expires','Expirés')}</div><section class="card" id="mlist">${mlist()}</section>`}
 function vPay(){const t=today(),mp=S.payments.filter(p=>(p.date||'').startsWith(t.slice(0,7))),tot=sum(mp),mn=fd(t,{month:'long',year:'numeric'});
@@ -204,7 +219,7 @@ const l=S.payments.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:0).slice
 return`<header class="hd"><h1>Paiements</h1></header><section class="card"><div class="hd"><h2>Encaissé en ${esc(mn)}</h2><b style="font:800 24px var(--fd)">${fcfa(tot)}</b></div>${bars}</section><section class="card"><h2>Historique</h2>`+
 (l.length?'<ul class="l">'+l.map(p=>`<li class="pay"><span class="d mu">${fd(p.date,{day:'numeric',month:'short'})}</span><span class="n"><b>${esc(p.nom)}</b> <span class="mu">${esc(planOf(p.planId).label)}</span></span><span class="m tag"><i class="dot ${esc(p.mode)}"></i>${esc(modeLabel(p.mode))}</span><span class="a">${fcfa(p.montant)}</span></li>`).join('')+'</ul>':'<div class="empty">Aucun paiement. Ils apparaissent quand vous ajoutez un membre ou renouvelez un abonnement.</div>')+'</section>'}
 function vReg(){const nm=ui.draft.name!=null?ui.draft.name:gymName(),ex=COLS.some(c=>S[c].some(x=>x.exemple)),c=ui.confirm&&ui.confirm.type==='ex';
-return`<header class="hd"><h1>Réglages</h1><a class="btn" href="/logout">Se déconnecter</a></header><section class="card"><h2>Ma salle</h2><div class="set"><label>Nom affiché dans le menu<input class="field" data-draft="name" value="${esc(nm)}" maxlength="60"></label></div><h2>Tarifs (FCFA)</h2><div class="set">${plans().map(p=>`<label>${esc(p.label)}, ${p.days} jours<input class="field" data-draft="p_${esc(p.id)}" type="number" min="0" step="500" value="${esc(ui.draft['p_'+p.id]!=null?ui.draft['p_'+p.id]:p.price)}"></label>`).join('')}</div><div><button class="btn pri" data-act="save">Enregistrer</button></div></section>
+return`<header class="hd"><h1>Réglages</h1><a class="btn" href="/logout">Se déconnecter</a></header><section class="card"><h2>Ma salle</h2><div class="set"><label>Nom affiché dans le menu<input class="field" data-draft="name" value="${esc(nm)}" maxlength="60"></label></div><h2>Tarifs (FCFA)</h2><div class="set">${plans().map(p=>`<label>${esc(p.label)}, ${p.days} jours<input class="field" data-draft="p_${esc(p.id)}" type="number" min="0" step="500" value="${esc(ui.draft['p_'+p.id]!=null?ui.draft['p_'+p.id]:p.price)}"></label>`).join('')}</div><h2>Crédits de séances par formule</h2><p class="sub">Les séances sont décomptées à chaque entrée enregistrée, dans la période de l’abonnement.</p><div class="set">${plans().map(p=>`<label>${esc(p.label)}<input class="field" data-draft="c_${esc(p.id)}" type="number" min="0" step="1" value="${esc(ui.draft['c_'+p.id]!=null?ui.draft['c_'+p.id]:planOf(p.id).credits)}"></label>`).join('')}</div><div><button class="btn pri" data-act="save">Enregistrer</button></div></section>
 <section class="card"><h2>Données</h2><p class="sub" style="margin:0">${ui.store==='local'?'Mode démonstration : les données restent dans ce navigateur et ne sont pas partagées avec d’autres appareils.':'Les données sont enregistrées et partagées avec les personnes autorisées.'}</p>`+
 (ex?(c?'<div class="cf">Supprimer tous les exemples ?<button class="btn sm gh" data-act="del-ex">Oui, supprimer</button><button class="btn sm" data-act="cancel">Annuler</button></div>':'<div><button class="btn gh" data-act="ask-ex">Supprimer les données d’exemple</button></div>'):'')+'</section>'}
 const V={accueil:vAccueil,membres:vMembres,paiements:vPay,reglages:vReg};
@@ -218,7 +233,7 @@ app.innerHTML=`<div class="shell"><aside class="side"><div class="logo"><span cl
 if(fid){const e=document.getElementById(fid);if(e){e.focus();try{if(pos!=null)e.setSelectionRange(pos,pos)}catch(x){}}}}
 
 document.addEventListener('click',e=>{const b=e.target.closest('[data-act]');if(!b)return;const a=b.getAttribute('data-act'),id=b.getAttribute('data-id'),m=id?S.members.find(x=>x.id===id):null;
-if(a==='new')openForm(null);else if(a==='renew'&&m)openForm(m);else if(a==='checkin')checkIn(id);
+if(a==='new')openForm(null);else if(a==='renew'&&m)openForm(m);else if(a==='checkin')checkIn(id);else if(a==='card'&&m)showCard(m);else if(a==='scan')startScanner();else if(a==='stop-scan')stopScanner().then(render);else if(a==='print-card')window.print();
 else if(a==='filter'){ui.filter=b.getAttribute('data-v');render()}
 else if(a==='goto'){ui.filter=b.getAttribute('data-v');ui.q='';location.hash='membres'}
 else if(a==='goto-pay')location.hash='paiements';
@@ -230,7 +245,7 @@ if(md){ui[md]=t.value;if(md==='cq'){$('#res').innerHTML=resHtml()}else $('#mlist
 document.addEventListener('change',e=>{const t=e.target;if(t.name==='plan'){$('#f-montant').value=planOf(t.value).price;preview()}else if(t.id==='f-debut')preview()});
 document.addEventListener('submit',e=>{if(e.target.id==='sf'){e.preventDefault();submitForm()}});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#sf'))closeSheet();else if(e.key==='Enter'&&e.target.id==='cq'){const f=found();if(f.length===1)checkIn(f[0].id)}});
-function route(){const h=(location.hash||'').replace('#','');ui.view=V[h]?h:'accueil';ui.confirm=null;render();window.scrollTo(0,0)}
+function route(){if(ui.scanning)stopScanner();const h=(location.hash||'').replace('#','');ui.view=V[h]?h:'accueil';ui.confirm=null;render();window.scrollTo(0,0)}
 window.addEventListener('hashchange',route);
 async function init(){route();let db=null;try{if(window.claude&&window.claude.use)db=await window.claude.use('db')}catch(e){db=null}
 if(db){DB=db;ui.store='db';render();subscribe()}else{ui.store='local';const s=loadLocal()||seed(today());S.members=s.members;S.payments=s.payments;S.checkins=s.checkins;S.settings=s.settings;render()}}
